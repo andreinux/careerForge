@@ -19,6 +19,7 @@ function GenerateResume() {
   const [submitted, setSubmitted] = useState(false);
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState("");
+const [generatedResume, setGeneratedResume] = useState(null);
 
 
   function handleChange(event) {
@@ -56,7 +57,8 @@ const [error, setError] = useState("");
     }
 
     console.log("Backend response:", result);
-    setSubmitted(true);
+setGeneratedResume(result.data);
+setSubmitted(true);
 
   } catch (err) {
     console.error("Resume submission failed:", err);
@@ -74,284 +76,388 @@ const [error, setError] = useState("");
 
   const labelClass = "text-sm font-semibold text-slate-700";
 
-  return (
-    <main className="min-h-screen bg-slate-50 px-5 py-12">
-      <div className="mx-auto max-w-4xl">
 
-        {/* Header */}
-        <div className="mb-10">
-          <a
-            href="/"
-            className="text-sm font-medium text-indigo-700 hover:text-indigo-900"
-          >
-            ← Back to Home
-          </a>
 
-          <p className="mt-8 text-sm font-bold uppercase tracking-widest text-indigo-600">
-            CareerForge AI
-          </p>
+return (
+  <main className="min-h-screen bg-slate-50 px-5 py-12">
+    <div className="mx-auto max-w-4xl">
 
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
-            Build your professional resume.
-          </h1>
+      {/* Header */}
+      <div className="mb-10">
+        <a
+          href="/"
+          className="text-sm font-medium text-indigo-700 hover:text-indigo-900"
+        >
+          ← Back to Home
+        </a>
 
-          <p className="mt-3 max-w-2xl text-slate-500">
-            Tell us about yourself, your education, and your experience.
-            Our AI will help turn your information into a professional resume.
-          </p>
-        </div>
+        <p className="mt-8 text-sm font-bold uppercase tracking-widest text-indigo-600">
+          CareerForge AI
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-7">
+        <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
+          Build your professional resume.
+        </h1>
 
-          {/* Personal Information */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-slate-900">
-                Personal Information
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                How can employers contact you?
-              </p>
-            </div>
+        <p className="mt-3 max-w-2xl text-slate-500">
+          Tell us about yourself, your education, and your experience.
+          Our AI will help turn your information into a professional resume.
+        </p>
+      </div>
 
-            <div className="grid gap-5 sm:grid-cols-2">
-              <label className={labelClass}>
-                Full Name *
-                <input
-                  className={inputClass}
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  required
-                />
-              </label>
+      <form onSubmit={handleSubmit} className="space-y-7">
 
-              <label className={labelClass}>
-                Email Address *
-                <input
-                  className={inputClass}
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="john@example.com"
-                  required
-                />
-              </label>
-
-              <label className={labelClass}>
-                Phone Number
-                <input
-                  className={inputClass}
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+63 912 345 6789"
-                />
-              </label>
-
-              <label className={labelClass}>
-                Location
-                <input
-                  className={inputClass}
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="Cebu, Philippines"
-                />
-              </label>
-
-              <label className={`${labelClass} sm:col-span-2`}>
-                Target Position
-                <input
-                  className={inputClass}
-                  name="targetRole"
-                  value={formData.targetRole}
-                  onChange={handleChange}
-                  placeholder="e.g. Junior Frontend Developer"
-                />
-              </label>
-            </div>
-          </section>
-
-          {/* Professional Summary */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+        {/* Personal Information */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+          <div className="mb-6">
             <h2 className="text-xl font-bold text-slate-900">
-              Professional Summary
+              Personal Information
             </h2>
-
             <p className="mt-1 text-sm text-slate-500">
-              Briefly introduce yourself, your background, and your goals.
+              How can employers contact you?
             </p>
-
-            <label className={`${labelClass} mt-6 block`}>
-              About You
-              <textarea
-                className={inputClass}
-                name="summary"
-                value={formData.summary}
-                onChange={handleChange}
-                rows="4"
-                placeholder="Describe your background, strengths, and career objectives..."
-              />
-            </label>
-          </section>
-
-          {/* Education */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">
-              Education
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Include your school, degree, and graduation date.
-            </p>
-
-            <label className={`${labelClass} mt-6 block`}>
-              Educational Background *
-              <textarea
-                className={inputClass}
-                name="education"
-                value={formData.education}
-                onChange={handleChange}
-                rows="4"
-                placeholder="Bachelor of Science in Information Technology&#10;Cebu Technological University&#10;Expected Graduation: 2030"
-                required
-              />
-            </label>
-          </section>
-
-          {/* Experience */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">
-              Work Experience
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Include jobs, internships, volunteer work, or relevant experience.
-              If you have none, you can leave this blank.
-            </p>
-
-            <label className={`${labelClass} mt-6 block`}>
-              Your Experience
-              <textarea
-                className={inputClass}
-                name="experience"
-                value={formData.experience}
-                onChange={handleChange}
-                rows="5"
-                placeholder="Job Title | Company | Dates&#10;Describe your responsibilities and achievements..."
-              />
-            </label>
-          </section>
-
-          {/* Skills */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">
-              Skills
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              List your technical and professional skills.
-            </p>
-
-            <label className={`${labelClass} mt-6 block`}>
-              Your Skills *
-              <textarea
-                className={inputClass}
-                name="skills"
-                value={formData.skills}
-                onChange={handleChange}
-                rows="3"
-                placeholder="JavaScript, React, HTML, CSS, Communication..."
-                required
-              />
-            </label>
-          </section>
-
-          {/* Projects */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">
-              Projects
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Showcase personal, academic, or professional projects.
-            </p>
-
-            <label className={`${labelClass} mt-6 block`}>
-              Your Projects
-              <textarea
-                className={inputClass}
-                name="projects"
-                value={formData.projects}
-                onChange={handleChange}
-                rows="4"
-                placeholder="Project Name&#10;Technologies used&#10;What you built and accomplished..."
-              />
-            </label>
-          </section>
-
-          {/* Certifications */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">
-              Certifications
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Add relevant certifications, training, or courses.
-            </p>
-
-            <label className={`${labelClass} mt-6 block`}>
-              Your Certifications
-              <textarea
-                className={inputClass}
-                name="certifications"
-                value={formData.certifications}
-                onChange={handleChange}
-                rows="3"
-                placeholder="Certification Name | Issuing Organization | Year"
-              />
-            </label>
-          </section>
-
-          {/* Submit */}
-          <div className="rounded-2xl bg-indigo-950 p-7 text-white">
-            <h2 className="text-xl font-bold">
-              Ready to build your resume?
-            </h2>
-
-            <p className="mt-2 text-sm text-indigo-200">
-              Review your information before proceeding to AI generation.
-            </p>
-
-           <button
-  type="submit"
-  disabled={loading}
-  className="mt-6 w-full rounded-xl bg-white px-6 py-4 font-bold text-indigo-950 transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
->
-  {loading ? "Sending Information..." : "Review My Information →"}
-</button>
-
-         {submitted && (
-  <p className="mt-4 text-sm text-green-300">
-    Your information was successfully received by CareerForge!
-  </p>
-)}
-
-{error && (
-  <p className="mt-4 text-sm text-red-300">
-    {error}
-  </p>
-)}
           </div>
 
-        </form>
-      </div>
-    </main>
-  );
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className={labelClass}>
+              Full Name *
+              <input
+                className={inputClass}
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                placeholder="John Doe"
+                required
+              />
+            </label>
+
+            <label className={labelClass}>
+              Email Address *
+              <input
+                className={inputClass}
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="john@example.com"
+                required
+              />
+            </label>
+
+            <label className={labelClass}>
+              Phone Number
+              <input
+                className={inputClass}
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="+63 912 345 6789"
+              />
+            </label>
+
+            <label className={labelClass}>
+              Location
+              <input
+                className={inputClass}
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Cebu, Philippines"
+              />
+            </label>
+
+            <label className={`${labelClass} sm:col-span-2`}>
+              Target Position
+              <input
+                className={inputClass}
+                name="targetRole"
+                value={formData.targetRole}
+                onChange={handleChange}
+                placeholder="e.g. Junior Frontend Developer"
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* Professional Summary */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-900">
+            Professional Summary
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Briefly introduce yourself, your background, and your goals.
+          </p>
+
+          <label className={`${labelClass} mt-6 block`}>
+            About You
+            <textarea
+              className={inputClass}
+              name="summary"
+              value={formData.summary}
+              onChange={handleChange}
+              rows="4"
+              placeholder="Describe your background, strengths, and career objectives..."
+            />
+          </label>
+        </section>
+
+        {/* Education */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-900">Education</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Include your school, degree, and graduation date.
+          </p>
+
+          <label className={`${labelClass} mt-6 block`}>
+            Educational Background *
+            <textarea
+              className={inputClass}
+              name="education"
+              value={formData.education}
+              onChange={handleChange}
+              rows="4"
+              placeholder="Bachelor of Science in Information Technology&#10;Cebu Technological University&#10;Expected Graduation: 2030"
+              required
+            />
+          </label>
+        </section>
+
+        {/* Experience */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-900">
+            Work Experience
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Include jobs, internships, volunteer work, or relevant experience.
+            If you have none, you can leave this blank.
+          </p>
+
+          <label className={`${labelClass} mt-6 block`}>
+            Your Experience
+            <textarea
+              className={inputClass}
+              name="experience"
+              value={formData.experience}
+              onChange={handleChange}
+              rows="5"
+              placeholder="Job Title | Company | Dates&#10;Describe your responsibilities and achievements..."
+            />
+          </label>
+        </section>
+
+        {/* Skills */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-900">Skills</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            List your technical and professional skills.
+          </p>
+
+          <label className={`${labelClass} mt-6 block`}>
+            Your Skills *
+            <textarea
+              className={inputClass}
+              name="skills"
+              value={formData.skills}
+              onChange={handleChange}
+              rows="3"
+              placeholder="JavaScript, React, HTML, CSS, Communication..."
+              required
+            />
+          </label>
+        </section>
+
+        {/* Projects */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-900">Projects</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Showcase personal, academic, or professional projects.
+          </p>
+
+          <label className={`${labelClass} mt-6 block`}>
+            Your Projects
+            <textarea
+              className={inputClass}
+              name="projects"
+              value={formData.projects}
+              onChange={handleChange}
+              rows="4"
+              placeholder="Project Name&#10;Technologies used&#10;What you built and accomplished..."
+            />
+          </label>
+        </section>
+
+        {/* Certifications */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-900">
+            Certifications
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Add relevant certifications, training, or courses.
+          </p>
+
+          <label className={`${labelClass} mt-6 block`}>
+            Your Certifications
+            <textarea
+              className={inputClass}
+              name="certifications"
+              value={formData.certifications}
+              onChange={handleChange}
+              rows="3"
+              placeholder="Certification Name | Issuing Organization | Year"
+            />
+          </label>
+        </section>
+
+        {/* Submit */}
+        <div className="rounded-2xl bg-indigo-950 p-7 text-white">
+          <h2 className="text-xl font-bold">
+            Ready to build your resume?
+          </h2>
+
+          <p className="mt-2 text-sm text-indigo-200">
+            Our AI will organize and improve your resume content.
+          </p>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-6 w-full rounded-xl bg-white px-6 py-4 font-bold text-indigo-950 transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          >
+            {loading ? "Generating Resume..." : "Generate My Resume →"}
+          </button>
+
+          {submitted && (
+            <p className="mt-4 text-sm text-green-300">
+              Your resume was successfully generated!
+            </p>
+          )}
+
+          {error && (
+            <p className="mt-4 text-sm text-red-300">
+              {error}
+            </p>
+          )}
+        </div>
+
+      </form>
+
+      {/* Generated Resume Preview */}
+      {generatedResume && (
+        <section className="mt-12 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+
+          <div className="mb-8 border-b border-slate-200 pb-6">
+            <p className="text-sm font-bold uppercase tracking-widest text-indigo-600">
+              CareerForge AI Result
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold text-slate-900">
+              {formData.fullName}
+            </h2>
+
+            <p className="mt-2 text-slate-500">
+              {[formData.email, formData.phone, formData.location]
+                .filter(Boolean)
+                .join(" • ")}
+            </p>
+
+            <h3 className="mt-5 text-xl font-semibold text-indigo-700">
+              {generatedResume.professionalHeadline}
+            </h3>
+          </div>
+
+          {/* Professional Summary */}
+          {generatedResume.professionalSummary && (
+            <div className="mb-8">
+              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
+                Professional Summary
+              </h3>
+              <p className="leading-7 text-slate-600">
+                {generatedResume.professionalSummary}
+              </p>
+            </div>
+          )}
+
+          {/* Experience */}
+          {generatedResume.experienceBullets?.length > 0 && (
+            <div className="mb-8">
+              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
+                Work Experience
+              </h3>
+              <ul className="list-disc space-y-2 pl-6 text-slate-600">
+                {generatedResume.experienceBullets.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Projects */}
+          {generatedResume.projectBullets?.length > 0 && (
+            <div className="mb-8">
+              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
+                Projects
+              </h3>
+              <ul className="list-disc space-y-2 pl-6 text-slate-600">
+                {generatedResume.projectBullets.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Skills */}
+          {generatedResume.skills?.length > 0 && (
+            <div className="mb-8">
+              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
+                Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {generatedResume.skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="rounded-full bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Education */}
+          {generatedResume.education && (
+            <div className="mb-8">
+              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
+                Education
+              </h3>
+              <p className="whitespace-pre-line leading-7 text-slate-600">
+                {generatedResume.education}
+              </p>
+            </div>
+          )}
+
+          {/* Certifications */}
+          {generatedResume.certifications?.length > 0 && (
+            <div>
+              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
+                Certifications
+              </h3>
+              <ul className="list-disc space-y-2 pl-6 text-slate-600">
+                {generatedResume.certifications.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+        </section>
+      )}
+
+    </div>
+  </main>
+);
+
 }
 
 export default GenerateResume;
