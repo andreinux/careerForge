@@ -41,7 +41,7 @@ const [error, setError] = useState("");
   setSubmitted(false);
 
   try {
-    const response = await fetch("http://localhost:5000/api/resume", {
+    const response = await fetch("http://localhost:5000/api/resume/generate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
