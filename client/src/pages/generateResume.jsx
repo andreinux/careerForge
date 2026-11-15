@@ -15,11 +15,15 @@ function GenerateResume() {
     projects: "",
     certifications: "",
   });
-
   const [submitted, setSubmitted] = useState(false);
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState("");
 const [generatedResume, setGeneratedResume] = useState(null);
+
+// Editable resume states
+const [editedResume, setEditedResume] = useState(null);
+const [isEditing, setIsEditing] = useState(false);
+
 
 
   function handleChange(event) {
@@ -57,8 +61,21 @@ const [generatedResume, setGeneratedResume] = useState(null);
     }
 
     console.log("Backend response:", result);
-setGeneratedResume(result.data);
+
+
+    setGeneratedResume(result.data);
+setEditedResume({
+  ...result.data,
+  fullName: formData.fullName,
+  email: formData.email,
+  phone: formData.phone,
+  location: formData.location,
+});
+
+setIsEditing(false);
 setSubmitted(true);
+
+
 
   } catch (err) {
     console.error("Resume submission failed:", err);
@@ -342,12 +359,13 @@ return (
 
       </form>
 
-    
+
 {/* Generated Resume Preview */}
-{generatedResume && (
+{generatedResume && editedResume && (
   <section className="mt-12">
-    {/* Preview heading - outside the actual resume */}
-    <div className="mb-5 flex items-center justify-between">
+
+    {/* Preview Heading */}
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
       <div>
         <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">
           CareerForge
@@ -356,114 +374,347 @@ return (
           Resume Preview
         </h2>
       </div>
-      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-        AI Generated
-      </span>
+
+      <div className="flex gap-2">
+        {isEditing ? (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setEditedResume({
+                  ...generatedResume,
+                  fullName: formData.fullName,
+                  email: formData.email,
+                  phone: formData.phone,
+                  location: formData.location,
+                });
+                setIsEditing(false);
+              }}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="rounded-lg bg-indigo-950 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-900"
+            >
+              Save Changes
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="rounded-lg bg-indigo-950 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-900"
+          >
+            Edit Resume
+          </button>
+        )}
+      </div>
     </div>
 
-    {/* Actual resume document */}
-    <article className="mx-auto max-w-[850px] border border-slate-200 bg-white px-8 py-10 shadow-lg sm:px-14 sm:py-12">
+    {/* EDITING INTERFACE */}
+    {isEditing && (
+      <div className="mb-8 space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
-      {/* Header */}
-      <header className="border-b-2 border-slate-800 pb-6 text-center">
-        <h1 className="text-3xl font-bold uppercase tracking-wide text-slate-900 sm:text-4xl">
-          {formData.fullName}
-        </h1>
-
-        {generatedResume.professionalHeadline && (
-          <p className="mt-3 text-base font-semibold tracking-wide text-blue-900">
-            {generatedResume.professionalHeadline}
+        <div>
+          <h3 className="text-lg font-bold text-slate-900">
+            Edit Personal Information
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Update your contact details and resume heading.
           </p>
+        </div>
+
+        {[
+          { label: "Full Name", field: "fullName" },
+          { label: "Email Address", field: "email" },
+          { label: "Phone Number", field: "phone" },
+          { label: "Location", field: "location" },
+          { label: "Professional Headline", field: "professionalHeadline" },
+        ].map(({ label, field }) => (
+          <label key={field} className="block">
+            <span className="text-sm font-semibold text-slate-700">
+              {label}
+            </span>
+            <input
+              type="text"
+              value={editedResume[field] || ""}
+              onChange={(e) =>
+                setEditedResume((previous) => ({
+                  ...previous,
+                  [field]: e.target.value,
+                }))
+              }
+              className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+        ))}
+
+        {/* Summary */}
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-700">
+            Professional Summary
+          </span>
+          <textarea
+            rows="5"
+            value={editedResume.professionalSummary || ""}
+            onChange={(e) =>
+              setEditedResume((previous) => ({
+                ...previous,
+                professionalSummary: e.target.value,
+              }))
+            }
+            className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+        </label>
+
+        {/* Experience */}
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-700">
+            Work Experience
+          </span>
+          <p className="mt-1 text-xs text-slate-500">
+            Put each bullet point on a separate line.
+          </p>
+          <textarea
+            rows="6"
+            value={(editedResume.experienceBullets || []).join("\n")}
+            onChange={(e) =>
+              setEditedResume((previous) => ({
+                ...previous,
+                experienceBullets: e.target.value
+                  .split("\n")
+                  .filter((line) => line.trim()),
+              }))
+            }
+            className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+        </label>
+
+        {/* Projects */}
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-700">
+            Projects
+          </span>
+          <p className="mt-1 text-xs text-slate-500">
+            Put each bullet point on a separate line.
+          </p>
+          <textarea
+            rows="6"
+            value={(editedResume.projectBullets || []).join("\n")}
+            onChange={(e) =>
+              setEditedResume((previous) => ({
+                ...previous,
+                projectBullets: e.target.value
+                  .split("\n")
+                  .filter((line) => line.trim()),
+              }))
+            }
+            className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+        </label>
+
+        {/* Skills */}
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-700">
+            Technical Skills
+          </span>
+          <p className="mt-1 text-xs text-slate-500">
+            Put each skill on a separate line.
+          </p>
+          <textarea
+            rows="4"
+            value={(editedResume.skills || []).join("\n")}
+            onChange={(e) =>
+              setEditedResume((previous) => ({
+                ...previous,
+                skills: e.target.value
+                  .split("\n")
+                  .filter((line) => line.trim()),
+              }))
+            }
+            className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+        </label>
+
+        {/* Education */}
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-700">
+            Education
+          </span>
+          <textarea
+            rows="5"
+            value={editedResume.education || ""}
+            onChange={(e) =>
+              setEditedResume((previous) => ({
+                ...previous,
+                education: e.target.value,
+              }))
+            }
+            className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+        </label>
+
+        {/* Certifications */}
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-700">
+            Certifications
+          </span>
+          <p className="mt-1 text-xs text-slate-500">
+            Put each certification on a separate line.
+          </p>
+          <textarea
+            rows="4"
+            value={(editedResume.certifications || []).join("\n")}
+            onChange={(e) =>
+              setEditedResume((previous) => ({
+                ...previous,
+                certifications: e.target.value
+                  .split("\n")
+                  .filter((line) => line.trim()),
+              }))
+            }
+            className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+        </label>
+
+        <div className="flex justify-end gap-2 border-t border-slate-200 pt-5">
+          <button
+            type="button"
+            onClick={() => {
+              setEditedResume({
+                ...generatedResume,
+                fullName: formData.fullName,
+                email: formData.email,
+                phone: formData.phone,
+                location: formData.location,
+              });
+              setIsEditing(false);
+            }}
+            className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+          >
+            Discard Changes
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsEditing(false)}
+            className="rounded-lg bg-indigo-950 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-900"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* ACTUAL RESUME DOCUMENT */}
+    {!isEditing && (
+      <article className="mx-auto max-w-[850px] border border-slate-200 bg-white px-8 py-10 shadow-lg sm:px-14 sm:py-12">
+
+        {/* Header */}
+        <header className="border-b-2 border-slate-800 pb-6 text-center">
+          <h1 className="text-3xl font-bold uppercase tracking-wide text-slate-900 sm:text-4xl">
+            {editedResume.fullName}
+          </h1>
+
+          {editedResume.professionalHeadline && (
+            <p className="mt-3 text-base font-semibold tracking-wide text-blue-900">
+              {editedResume.professionalHeadline}
+            </p>
+          )}
+
+          <div className="mt-4 flex flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-slate-600">
+            {[editedResume.email, editedResume.phone, editedResume.location]
+              .filter(Boolean)
+              .map((item, index) => (
+                <span key={index}>{item}</span>
+              ))}
+          </div>
+        </header>
+
+        {/* Professional Summary */}
+        {editedResume.professionalSummary && (
+          <section className="mt-7">
+            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+              Professional Summary
+            </h2>
+            <p className="text-sm leading-6 text-slate-700">
+              {editedResume.professionalSummary}
+            </p>
+          </section>
         )}
 
-        <div className="mt-4 flex flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-slate-600">
-          {[formData.email, formData.phone, formData.location]
-            .filter(Boolean)
-            .map((item, index) => (
-              <span key={index}>{item}</span>
-            ))}
-        </div>
-      </header>
+        {/* Work Experience */}
+        {editedResume.experienceBullets?.length > 0 && (
+          <section className="mt-7">
+            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+              Work Experience
+            </h2>
+            <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+              {editedResume.experienceBullets.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-      {/* Professional Summary */}
-      {generatedResume.professionalSummary && (
-        <section className="mt-7">
-          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-            Professional Summary
-          </h2>
-          <p className="text-sm leading-6 text-slate-700">
-            {generatedResume.professionalSummary}
-          </p>
-        </section>
-      )}
+        {/* Projects */}
+        {editedResume.projectBullets?.length > 0 && (
+          <section className="mt-7">
+            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+              Projects
+            </h2>
+            <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+              {editedResume.projectBullets.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-      {/* Work Experience */}
-      {generatedResume.experienceBullets?.length > 0 && (
-        <section className="mt-7">
-          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-            Work Experience
-          </h2>
-          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
-            {generatedResume.experienceBullets.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </section>
-      )}
+        {/* Skills */}
+        {editedResume.skills?.length > 0 && (
+          <section className="mt-7">
+            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+              Technical Skills
+            </h2>
+            <p className="text-sm leading-6 text-slate-700">
+              {editedResume.skills.join("  •  ")}
+            </p>
+          </section>
+        )}
 
-      {/* Projects */}
-      {generatedResume.projectBullets?.length > 0 && (
-        <section className="mt-7">
-          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-            Projects
-          </h2>
-          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
-            {generatedResume.projectBullets.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </section>
-      )}
+        {/* Education */}
+        {editedResume.education && (
+          <section className="mt-7">
+            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+              Education
+            </h2>
+            <p className="whitespace-pre-line text-sm leading-6 text-slate-700">
+              {editedResume.education}
+            </p>
+          </section>
+        )}
 
-      {/* Skills */}
-      {generatedResume.skills?.length > 0 && (
-        <section className="mt-7">
-          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-            Technical Skills
-          </h2>
-          <p className="text-sm leading-6 text-slate-700">
-            {generatedResume.skills.join("  •  ")}
-          </p>
-        </section>
-      )}
+        {/* Certifications */}
+        {editedResume.certifications?.length > 0 && (
+          <section className="mt-7">
+            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+              Certifications
+            </h2>
+            <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+              {editedResume.certifications.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-      {/* Education */}
-      {generatedResume.education && (
-        <section className="mt-7">
-          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-            Education
-          </h2>
-          <p className="whitespace-pre-line text-sm leading-6 text-slate-700">
-            {generatedResume.education}
-          </p>
-        </section>
-      )}
-
-      {/* Certifications */}
-      {generatedResume.certifications?.length > 0 && (
-        <section className="mt-7">
-          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-            Certifications
-          </h2>
-          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
-            {generatedResume.certifications.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-    </article>
+      </article>
+    )}
   </section>
 )}
 
