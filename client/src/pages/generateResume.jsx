@@ -342,117 +342,132 @@ return (
 
       </form>
 
-      {/* Generated Resume Preview */}
-      {generatedResume && (
-        <section className="mt-12 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+    
+{/* Generated Resume Preview */}
+{generatedResume && (
+  <section className="mt-12">
+    {/* Preview heading - outside the actual resume */}
+    <div className="mb-5 flex items-center justify-between">
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">
+          CareerForge
+        </p>
+        <h2 className="mt-1 text-xl font-bold text-slate-900">
+          Resume Preview
+        </h2>
+      </div>
+      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+        AI Generated
+      </span>
+    </div>
 
-          <div className="mb-8 border-b border-slate-200 pb-6">
-            <p className="text-sm font-bold uppercase tracking-widest text-indigo-600">
-              CareerForge AI Result
-            </p>
+    {/* Actual resume document */}
+    <article className="mx-auto max-w-[850px] border border-slate-200 bg-white px-8 py-10 shadow-lg sm:px-14 sm:py-12">
 
-            <h2 className="mt-3 text-3xl font-bold text-slate-900">
-              {formData.fullName}
-            </h2>
+      {/* Header */}
+      <header className="border-b-2 border-slate-800 pb-6 text-center">
+        <h1 className="text-3xl font-bold uppercase tracking-wide text-slate-900 sm:text-4xl">
+          {formData.fullName}
+        </h1>
 
-            <p className="mt-2 text-slate-500">
-              {[formData.email, formData.phone, formData.location]
-                .filter(Boolean)
-                .join(" • ")}
-            </p>
+        {generatedResume.professionalHeadline && (
+          <p className="mt-3 text-base font-semibold tracking-wide text-blue-900">
+            {generatedResume.professionalHeadline}
+          </p>
+        )}
 
-            <h3 className="mt-5 text-xl font-semibold text-indigo-700">
-              {generatedResume.professionalHeadline}
-            </h3>
-          </div>
+        <div className="mt-4 flex flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-slate-600">
+          {[formData.email, formData.phone, formData.location]
+            .filter(Boolean)
+            .map((item, index) => (
+              <span key={index}>{item}</span>
+            ))}
+        </div>
+      </header>
 
-          {/* Professional Summary */}
-          {generatedResume.professionalSummary && (
-            <div className="mb-8">
-              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
-                Professional Summary
-              </h3>
-              <p className="leading-7 text-slate-600">
-                {generatedResume.professionalSummary}
-              </p>
-            </div>
-          )}
-
-          {/* Experience */}
-          {generatedResume.experienceBullets?.length > 0 && (
-            <div className="mb-8">
-              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
-                Work Experience
-              </h3>
-              <ul className="list-disc space-y-2 pl-6 text-slate-600">
-                {generatedResume.experienceBullets.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Projects */}
-          {generatedResume.projectBullets?.length > 0 && (
-            <div className="mb-8">
-              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
-                Projects
-              </h3>
-              <ul className="list-disc space-y-2 pl-6 text-slate-600">
-                {generatedResume.projectBullets.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Skills */}
-          {generatedResume.skills?.length > 0 && (
-            <div className="mb-8">
-              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
-                Skills
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {generatedResume.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="rounded-full bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Education */}
-          {generatedResume.education && (
-            <div className="mb-8">
-              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
-                Education
-              </h3>
-              <p className="whitespace-pre-line leading-7 text-slate-600">
-                {generatedResume.education}
-              </p>
-            </div>
-          )}
-
-          {/* Certifications */}
-          {generatedResume.certifications?.length > 0 && (
-            <div>
-              <h3 className="mb-3 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
-                Certifications
-              </h3>
-              <ul className="list-disc space-y-2 pl-6 text-slate-600">
-                {generatedResume.certifications.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
+      {/* Professional Summary */}
+      {generatedResume.professionalSummary && (
+        <section className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Professional Summary
+          </h2>
+          <p className="text-sm leading-6 text-slate-700">
+            {generatedResume.professionalSummary}
+          </p>
         </section>
       )}
+
+      {/* Work Experience */}
+      {generatedResume.experienceBullets?.length > 0 && (
+        <section className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Work Experience
+          </h2>
+          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+            {generatedResume.experienceBullets.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Projects */}
+      {generatedResume.projectBullets?.length > 0 && (
+        <section className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Projects
+          </h2>
+          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+            {generatedResume.projectBullets.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Skills */}
+      {generatedResume.skills?.length > 0 && (
+        <section className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Technical Skills
+          </h2>
+          <p className="text-sm leading-6 text-slate-700">
+            {generatedResume.skills.join("  •  ")}
+          </p>
+        </section>
+      )}
+
+      {/* Education */}
+      {generatedResume.education && (
+        <section className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Education
+          </h2>
+          <p className="whitespace-pre-line text-sm leading-6 text-slate-700">
+            {generatedResume.education}
+          </p>
+        </section>
+      )}
+
+      {/* Certifications */}
+      {generatedResume.certifications?.length > 0 && (
+        <section className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Certifications
+          </h2>
+          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+            {generatedResume.certifications.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+    </article>
+  </section>
+)}
+
+
 
     </div>
   </main>
