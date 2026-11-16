@@ -1,5 +1,8 @@
 
 import { useState } from "react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import ResumePDF from "../components/ResumePDF";
+ 
 
 function GenerateResume() {
   const [formData, setFormData] = useState({
@@ -403,14 +406,26 @@ return (
               Save Changes
             </button>
           </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIsEditing(true)}
-            className="rounded-lg bg-indigo-950 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-900"
-          >
-            Edit Resume
-          </button>
+             ) : (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="rounded-lg bg-indigo-950 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-900"
+            >
+              Edit Resume
+            </button>
+
+            <PDFDownloadLink
+              document={<ResumePDF resume={editedResume} />}
+              fileName="CareerForge-Resume.pdf"
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            >
+              {({ loading }) =>
+                loading ? "Preparing PDF..." : "Download PDF ↓"
+              }
+            </PDFDownloadLink>
+          </div>
         )}
       </div>
     </div>
