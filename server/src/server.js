@@ -220,6 +220,9 @@ app.post("/api/resume", (req, res) => {
         });
     }
 
+
+
+
     console.log("Resume information received!");
 
     res.status(200).json({
@@ -252,7 +255,76 @@ app.post("/api/resume/generate", async (req, res) => {
             });
         }
 
+                // ADD THIS HERE
+        const allowedFormats = ["chronological", "functional", "hybrid"];
+
+        const selectedFormat = allowedFormats.includes(resumeData.selectedFormat)
+            ? resumeData.selectedFormat
+            : "hybrid";
+
+
+
         // AI instructions
+
+        const formatInstructions = {
+    chronological: `
+RESUME FORMAT: REVERSE-CHRONOLOGICAL
+
+- Prioritize work experience and professional history.
+- Organize experience entries from newest to oldest when dates are available.
+- Organize education entries from newest to oldest when dates are available.
+- Keep projects and skills as separate sections.
+- Do not invent dates or assume an order that the supplied information does not support.
+`,
+
+    functional: `
+RESUME FORMAT: FUNCTIONAL
+
+- Prioritize the user's skills, technical competencies, and relevant capabilities.
+- Emphasize projects and concrete examples that demonstrate those skills.
+- Keep work experience as a separate section, but do not make it the primary focus.
+- Include education and certifications in their own sections.
+- Do not exaggerate skills or present projects as employment.
+`,
+
+    hybrid: `
+RESUME FORMAT: COMBINATION / HYBRID
+
+- Prioritize relevant skills and technical competencies.
+- Follow with work experience and projects that demonstrate those capabilities.
+- Keep education and certifications in their own sections.
+- Balance skills-based presentation with a clear chronological history.
+- Do not invent dates or assume an order that the supplied information does not support.
+`
+};
+
+const sectionOrders = {
+    chronological: [
+        "experience",
+        "projects",
+        "skills",
+        "education",
+        "certifications"
+    ],
+
+    functional: [
+        "skills",
+        "projects",
+        "experience",
+        "education",
+        "certifications"
+    ],
+
+    hybrid: [
+        "skills",
+        "experience",
+        "projects",
+        "education",
+        "certifications"
+    ]
+};
+
+
         const systemPrompt = `
 You are CareerForge, an expert professional resume writer
 specializing in corporate, technical, and entry-level resumes.
@@ -345,6 +417,11 @@ For experience and project descriptions:
 - Never invent missing information.
 - Do not force content into a section just to make the resume look complete.
 
+
+${formatInstructions[selectedFormat]}
+
+========================
+
 ========================
 6. OUTPUT REQUIREMENTS
 ========================
@@ -370,6 +447,9 @@ Return ONLY valid JSON. Do not include Markdown fences or additional commentary.
         // User information
         const userPrompt = `
 Create a professional resume using the following information.
+
+SELECTED RESUME FORMAT:
+${selectedFormat}
 
 USER INFORMATION:
 ${JSON.stringify(resumeData, null, 2)}
@@ -401,9 +481,13 @@ Remember:
         });
 
         // Parse AI response
-        const generatedResume = JSON.parse(
-            completion.choices[0].message.content
-        );
+       const generatedResume = JSON.parse(
+    completion.choices[0].message.content
+);
+
+// Attach format metadata for frontend layout
+generatedResume.resumeFormat = selectedFormat;
+generatedResume.sectionOrder = sectionOrders[selectedFormat];
 
         // Return generated resume
         res.status(200).json({
