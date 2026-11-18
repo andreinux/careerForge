@@ -474,9 +474,61 @@ Remember:
                     content: userPrompt
                 }
             ],
-            response_format: {
-                type: "json_object"
+          response_format: {
+    type: "json_schema",
+    json_schema: {
+        name: "careerforge_resume",
+        strict: true,
+        schema: {
+            type: "object",
+            properties: {
+                professionalHeadline: {
+                    type: "string"
+                },
+                professionalSummary: {
+                    type: "string"
+                },
+                experienceBullets: {
+                    type: "array",
+                    items: {
+                        type: "string"
+                    }
+                },
+                projectBullets: {
+                    type: "array",
+                    items: {
+                        type: "string"
+                    }
+                },
+                skills: {
+                    type: "array",
+                    items: {
+                        type: "string"
+                    }
+                },
+                education: {
+                    type: "string"
+                },
+                certifications: {
+                    type: "array",
+                    items: {
+                        type: "string"
+                    }
+                }
             },
+            required: [
+                "professionalHeadline",
+                "professionalSummary",
+                "experienceBullets",
+                "projectBullets",
+                "skills",
+                "education",
+                "certifications"
+            ],
+            additionalProperties: false
+        }
+    }
+},
             temperature: 0.2
         });
 

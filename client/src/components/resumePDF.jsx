@@ -99,6 +99,14 @@ function ResumePDF({ resume }) {
     resume.location,
   ].filter(Boolean);
 
+  const sectionOrder = resume.sectionOrder || [
+  "experience",
+  "projects",
+  "skills",
+  "education",
+  "certifications",
+];
+
   function renderBullets(items) {
     if (!Array.isArray(items) || items.length === 0) return null;
 
@@ -144,59 +152,58 @@ function ResumePDF({ resume }) {
           </View>
         )}
 
-        {/* Work Experience */}
-        {resume.experienceBullets?.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Work Experience
-            </Text>
-            {renderBullets(resume.experienceBullets)}
-          </View>
-        )}
+      {/* Dynamic Resume Sections */}
+{sectionOrder.map((section, index) => {
+  switch (section) {
+    case "experience":
+      return resume.experienceBullets?.length > 0 ? (
+        <View style={styles.section} key={`${section}-${index}`}>
+          <Text style={styles.sectionTitle}>Work Experience</Text>
+          {renderBullets(resume.experienceBullets)}
+        </View>
+      ) : null;
 
-        {/* Projects */}
-        {resume.projectBullets?.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Projects
-            </Text>
-            {renderBullets(resume.projectBullets)}
-          </View>
-        )}
+    case "projects":
+      return resume.projectBullets?.length > 0 ? (
+        <View style={styles.section} key={`${section}-${index}`}>
+          <Text style={styles.sectionTitle}>Projects</Text>
+          {renderBullets(resume.projectBullets)}
+        </View>
+      ) : null;
 
-        {/* Skills */}
-        {resume.skills?.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Technical Skills
-            </Text>
-            <Text style={styles.paragraph}>
-              {resume.skills.join("  •  ")}
-            </Text>
-          </View>
-        )}
+    case "skills":
+      return resume.skills?.length > 0 ? (
+        <View style={styles.section} key={`${section}-${index}`}>
+          <Text style={styles.sectionTitle}>Technical Skills</Text>
+          <Text style={styles.paragraph}>
+            {resume.skills.join("  •  ")}
+          </Text>
+        </View>
+      ) : null;
 
-        {/* Education */}
-        {resume.education && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Education
-            </Text>
-            <Text style={styles.paragraph}>
-              {resume.education}
-            </Text>
-          </View>
-        )}
+    case "education":
+      return resume.education ? (
+        <View style={styles.section} key={`${section}-${index}`}>
+          <Text style={styles.sectionTitle}>Education</Text>
+          <Text style={styles.paragraph}>
+            {resume.education}
+          </Text>
+        </View>
+      ) : null;
 
-        {/* Certifications */}
-        {resume.certifications?.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Certifications
-            </Text>
-            {renderBullets(resume.certifications)}
-          </View>
-        )}
+    case "certifications":
+      return resume.certifications?.length > 0 ? (
+        <View style={styles.section} key={`${section}-${index}`}>
+          <Text style={styles.sectionTitle}>Certifications</Text>
+          {renderBullets(resume.certifications)}
+        </View>
+      ) : null;
+
+    default:
+      return null;
+  }
+})}
+
       </Page>
     </Document>
   );

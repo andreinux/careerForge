@@ -540,9 +540,10 @@ return (
             >
               Edit Resume
             </button>
-
-            <PDFDownloadLink
-              document={<ResumePDF resume={editedResume} />}
+              <PDFDownloadLink
+  key={editedResume?.sectionOrder?.join("-") || "default"}
+  document={<ResumePDF resume={editedResume} />}
+  
               fileName="CareerForge-Resume.pdf"
               className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
             >
