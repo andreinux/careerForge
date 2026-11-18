@@ -12,6 +12,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "groq-sdk": "^1.6.0",
+    "mammoth": "^1.13.0",
     "multer": "^2.5.0",
     "pdfjs-dist": "^6.5.438"
   },

@@ -7,6 +7,7 @@ import Groq from "groq-sdk";
 dotenv.config();
 import multer from "multer";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import mammoth from "mammoth";
 
 
 const groq = new Groq({
@@ -28,22 +29,102 @@ app.use(cors({
 
 app.use(express.json());
 
-// PDF upload configuration
+// PDF and docx upload configuration
+
 const upload = multer({
     storage: multer.memoryStorage(),
-
     limits: {
         fileSize: 5 * 1024 * 1024 // 5 MB
     },
-
     fileFilter: (req, file, cb) => {
-        if (file.mimetype !== "application/pdf") {
-            return cb(new Error("Only PDF files are allowed."));
+        const allowedMimeTypes = [
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ];
+
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+            return cb(
+                new Error("Only PDF and DOCX files are allowed.")
+            );
         }
 
         cb(null, true);
     }
 });
+
+
+async function extractResumeText(file) {
+    if (!file) {
+        throw new Error("No resume file was provided.");
+    }
+
+    // PDF extraction
+    if (file.mimetype === "application/pdf") {
+        const fileSignature = file.buffer
+            .subarray(0, 5)
+            .toString("ascii");
+
+        if (fileSignature !== "%PDF-") {
+            throw new Error("The uploaded PDF is invalid.");
+        }
+
+        const loadingTask = getDocument({
+            data: new Uint8Array(file.buffer),
+            isEvalSupported: false,
+            useSystemFonts: true
+        });
+
+        const pdfDocument = await loadingTask.promise;
+
+        try {
+            const extractedPages = [];
+
+            for (
+                let pageNumber = 1;
+                pageNumber <= pdfDocument.numPages;
+                pageNumber++
+            ) {
+                const page = await pdfDocument.getPage(pageNumber);
+                const textContent = await page.getTextContent();
+
+                const pageText = textContent.items
+                    .map((item) => item.str || "")
+                    .join(" ");
+
+                extractedPages.push(pageText);
+            }
+
+            return extractedPages.join("\n\n").trim();
+
+        } finally {
+            await pdfDocument.destroy();
+        }
+    }
+
+    // DOCX extraction
+    if (
+        file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+        const fileSignature = file.buffer
+            .subarray(0, 4)
+            .toString("hex");
+
+        // DOCX files are ZIP containers and begin with PK
+        if (fileSignature !== "504b0304") {
+            throw new Error("The uploaded DOCX file is invalid.");
+        }
+
+        const result = await mammoth.extractRawText({
+            buffer: file.buffer
+        });
+
+        return result.value.trim();
+    }
+
+    throw new Error("Unsupported resume file format.");
+}
+
 
 
 // Initialize Gemini
@@ -343,7 +424,7 @@ Remember:
 
 // Extract text from uploaded resume PDF
 app.post("/api/resume/extract", upload.single("resume"), async (req, res) => {
-    let pdfDocument;
+    
 
     try {
         // Check if a file was uploaded
@@ -433,60 +514,38 @@ app.post("/api/resume/evaluate", upload.single("resume"), async (req, res) => {
     let pdfDocument;
 
     try {
-        // 1. Validate uploaded file
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: "Please upload a PDF resume."
-            });
-        }
+        
+// 1. Validate uploaded file
+if (!req.file) {
+    return res.status(400).json({
+        success: false,
+        message: "Please upload a PDF or DOCX resume."
+    });
+}
 
-        const fileSignature = req.file.buffer
-            .subarray(0, 5)
-            .toString("ascii");
+// 2. Extract text based on the uploaded file format
+let resumeText;
 
-        if (fileSignature !== "%PDF-") {
-            return res.status(400).json({
-                success: false,
-                message: "The uploaded file is not a valid PDF."
-            });
-        }
+try {
+    resumeText = await extractResumeText(req.file);
+} catch (extractionError) {
+    return res.status(400).json({
+        success: false,
+        message: extractionError.message || "Unable to extract resume text."
+    });
+}
 
-        // 2. Extract text from PDF
-        const loadingTask = getDocument({
-            data: new Uint8Array(req.file.buffer),
-            isEvalSupported: false,
-            useSystemFonts: true
-        });
+if (!resumeText) {
+    return res.status(422).json({
+        success: false,
+        message: "No readable text found in this resume."
+    });
+}
 
-        pdfDocument = await loadingTask.promise;
+// Limit the amount of text sent to the AI
+const limitedResumeText = resumeText.slice(0, 20000);
 
-        const extractedPages = [];
-
-        for (
-            let pageNumber = 1;
-            pageNumber <= pdfDocument.numPages;
-            pageNumber++
-        ) {
-            const page = await pdfDocument.getPage(pageNumber);
-            const textContent = await page.getTextContent();
-
-            const pageText = textContent.items
-                .map((item) => item.str || "")
-                .join(" ");
-
-            extractedPages.push(pageText);
-        }
-
-        const resumeText = extractedPages.join("\n\n").trim();
-
-        if (!resumeText) {
-            return res.status(422).json({
-                success: false,
-                message: "No readable text found in this PDF."
-            });
-        }
-
+       
         // Limit the amount of text sent to the AI
         const limitedResumeText = resumeText.slice(0, 20000);
 
@@ -657,15 +716,7 @@ ${limitedResumeText}
             message: "Unable to evaluate this resume. Please try again."
         });
 
-    } finally {
-        if (pdfDocument) {
-            try {
-                await pdfDocument.destroy();
-            } catch (cleanupError) {
-                console.error("PDF cleanup error:", cleanupError.message);
-            }
-        }
-    }
+    } 
 });
 
 
