@@ -45,23 +45,28 @@ const [evaluation, setEvaluation] = useState(null);
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
-  function handleFile(file) {
-    setError("");
+function handleFile(file) {
+  setError("");
 
-    if (!file) return;
+  if (!file) return;
 
-    if (file.type !== "application/pdf") {
-      setError("Please upload a PDF file only.");
-      return;
-    }
+  const allowedTypes = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
 
-    if (file.size > MAX_FILE_SIZE) {
-      setError("File size must not exceed 5 MB.");
-      return;
-    }
-
-    setSelectedFile(file);
+  if (!allowedTypes.includes(file.type)) {
+    setError("Please upload a PDF or DOCX file only.");
+    return;
   }
+
+  if (file.size > MAX_FILE_SIZE) {
+    setError("File size must not exceed 5 MB.");
+    return;
+  }
+
+  setSelectedFile(file);
+}
 
   function handleFileChange(event) {
     const file = event.target.files?.[0];
@@ -198,7 +203,7 @@ async function handleSubmit(event) {
               </div>
 
               <p className="mt-4 font-semibold text-slate-800">
-                Drop your PDF resume here
+                Drop your PDF or DOCX resume here
               </p>
 
               <p className="mt-2 text-sm text-slate-500">
@@ -206,13 +211,13 @@ async function handleSubmit(event) {
               </p>
 
               <p className="mt-3 text-xs text-slate-400">
-                PDF only · Maximum file size: 5 MB
+                PDF or DOCX · Maximum file size: 5 MB
               </p>
 
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,application/pdf"
+                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -223,7 +228,9 @@ async function handleSubmit(event) {
               <div className="mt-4 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
-                    <span className="text-xs font-bold">PDF</span>
+                    <span className="text-xs font-bold">
+  {selectedFile.name.toLowerCase().endsWith(".docx") ? "DOCX" : "PDF"}
+</span>
                   </div>
 
                   <div className="min-w-0">

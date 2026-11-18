@@ -542,8 +542,6 @@ if (!resumeText) {
     });
 }
 
-// Limit the amount of text sent to the AI
-const limitedResumeText = resumeText.slice(0, 20000);
 
        
         // Limit the amount of text sent to the AI
