@@ -22,6 +22,7 @@ function GenerateResume() {
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState("");
 const [generatedResume, setGeneratedResume] = useState(null);
+const [selectedFormat, setSelectedFormat] = useState("hybrid");
 
 // Editable resume states
 const [editedResume, setEditedResume] = useState(null);
@@ -328,6 +329,120 @@ return (
             />
           </label>
         </section>
+
+
+{/* Resume Format Selection */}
+<section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+
+  <div className="mb-6">
+    <h2 className="text-xl font-bold text-slate-900">
+      Choose Your Resume Format
+    </h2>
+    <p className="mt-1 text-sm text-slate-500">
+      Select the structure that best highlights your qualifications.
+    </p>
+  </div>
+
+  <div className="grid gap-4">
+
+    {/* Reverse Chronological */}
+    <button
+      type="button"
+      onClick={() => setSelectedFormat("chronological")}
+      className={`rounded-xl border-2 p-5 text-left transition ${
+        selectedFormat === "chronological"
+          ? "border-indigo-600 bg-indigo-50"
+          : "border-slate-200 hover:border-indigo-300"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-slate-900">
+          Reverse-Chronological
+        </h3>
+        <span className="text-sm font-semibold text-indigo-600">
+          {selectedFormat === "chronological" ? "✓ Selected" : "Select"}
+        </span>
+      </div>
+
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        Presents your experience and education from newest to oldest.
+        A familiar format for traditional job applications.
+      </p>
+
+      <p className="mt-3 text-xs font-semibold text-slate-500">
+        BEST FOR: Applicants with relevant work experience
+      </p>
+    </button>
+
+    {/* Functional */}
+    <button
+      type="button"
+      onClick={() => setSelectedFormat("functional")}
+      className={`rounded-xl border-2 p-5 text-left transition ${
+        selectedFormat === "functional"
+          ? "border-indigo-600 bg-indigo-50"
+          : "border-slate-200 hover:border-indigo-300"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-slate-900">
+          Functional (Skills-Based)
+        </h3>
+        <span className="text-sm font-semibold text-indigo-600">
+          {selectedFormat === "functional" ? "✓ Selected" : "Select"}
+        </span>
+      </div>
+
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        Highlights your skills and competencies rather than focusing
+        primarily on employment history.
+      </p>
+
+      <p className="mt-3 text-xs font-semibold text-slate-500">
+        BEST FOR: Career changers and applicants with limited experience
+      </p>
+    </button>
+
+    {/* Combination */}
+    <button
+      type="button"
+      onClick={() => setSelectedFormat("hybrid")}
+      className={`rounded-xl border-2 p-5 text-left transition ${
+        selectedFormat === "hybrid"
+          ? "border-indigo-600 bg-indigo-50"
+          : "border-slate-200 hover:border-indigo-300"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-slate-900">
+          Combination (Hybrid)
+        </h3>
+
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">
+            Recommended
+          </span>
+          {selectedFormat === "hybrid" && (
+            <span className="text-sm font-semibold text-indigo-600">
+              ✓ Selected
+            </span>
+          )}
+        </div>
+      </div>
+
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        Combines a skills-focused introduction with chronological
+        education and work experience.
+      </p>
+
+      <p className="mt-3 text-xs font-semibold text-slate-500">
+        BEST FOR: Students, developers, and applicants with projects
+      </p>
+    </button>
+
+  </div>
+</section>
+
 
         {/* Submit */}
         <div className="rounded-2xl bg-indigo-950 p-7 text-white">
