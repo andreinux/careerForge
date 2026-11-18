@@ -100,6 +100,13 @@ setSubmitted(true);
 
   const labelClass = "text-sm font-semibold text-slate-700";
 
+  const sectionOrder = editedResume?.sectionOrder || [
+  "experience",
+  "projects",
+  "skills",
+  "education",
+  "certifications",
+];
 
 
 return (
@@ -780,72 +787,79 @@ return (
           </section>
         )}
 
-        {/* Work Experience */}
-        {editedResume.experienceBullets?.length > 0 && (
-          <section className="mt-7">
-            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-              Work Experience
-            </h2>
-            <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
-              {editedResume.experienceBullets.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </section>
-        )}
+        {/* Dynamic Resume Sections */}
+{sectionOrder.map((section) => {
+  switch (section) {
+    case "experience":
+      return editedResume.experienceBullets?.length > 0 ? (
+        <section key={section} className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Work Experience
+          </h2>
+          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+            {editedResume.experienceBullets.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null;
 
-        {/* Projects */}
-        {editedResume.projectBullets?.length > 0 && (
-          <section className="mt-7">
-            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-              Projects
-            </h2>
-            <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
-              {editedResume.projectBullets.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </section>
-        )}
+    case "projects":
+      return editedResume.projectBullets?.length > 0 ? (
+        <section key={section} className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Projects
+          </h2>
+          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+            {editedResume.projectBullets.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null;
 
-        {/* Skills */}
-        {editedResume.skills?.length > 0 && (
-          <section className="mt-7">
-            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-              Technical Skills
-            </h2>
-            <p className="text-sm leading-6 text-slate-700">
-              {editedResume.skills.join("  •  ")}
-            </p>
-          </section>
-        )}
+    case "skills":
+      return editedResume.skills?.length > 0 ? (
+        <section key={section} className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Technical Skills
+          </h2>
+          <p className="text-sm leading-6 text-slate-700">
+            {editedResume.skills.join("  •  ")}
+          </p>
+        </section>
+      ) : null;
 
-        {/* Education */}
-        {editedResume.education && (
-          <section className="mt-7">
-            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-              Education
-            </h2>
-            <p className="whitespace-pre-line text-sm leading-6 text-slate-700">
-              {editedResume.education}
-            </p>
-          </section>
-        )}
+    case "education":
+      return editedResume.education ? (
+        <section key={section} className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Education
+          </h2>
+          <p className="whitespace-pre-line text-sm leading-6 text-slate-700">
+            {editedResume.education}
+          </p>
+        </section>
+      ) : null;
 
-        {/* Certifications */}
-        {editedResume.certifications?.length > 0 && (
-          <section className="mt-7">
-            <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
-              Certifications
-            </h2>
-            <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
-              {editedResume.certifications.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </section>
-        )}
+    case "certifications":
+      return editedResume.certifications?.length > 0 ? (
+        <section key={section} className="mt-7">
+          <h2 className="mb-3 border-b border-slate-300 pb-2 text-sm font-bold uppercase tracking-widest text-slate-900">
+            Certifications
+          </h2>
+          <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+            {editedResume.certifications.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null;
 
+    default:
+      return null;
+  }
+})}
       </article>
     )}
   </section>
