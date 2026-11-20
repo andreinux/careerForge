@@ -74,9 +74,8 @@ async function extractResumeText(file) {
             useSystemFonts: true
         });
 
-        const pdfDocument = await loadingTask.promise;
-
         try {
+            const pdfDocument = await loadingTask.promise;
             const extractedPages = [];
 
             for (
@@ -97,7 +96,7 @@ async function extractResumeText(file) {
             return extractedPages.join("\n\n").trim();
 
         } finally {
-            await pdfDocument.destroy();
+            await loadingTask.destroy();
         }
     }
 
@@ -561,7 +560,7 @@ generatedResume.sectionOrder = sectionOrders[selectedFormat];
 // Extract text from uploaded resume PDF
 app.post("/api/resume/extract", upload.single("resume"), async (req, res) => {
     
-
+    let loadingTask;
     try {
         // Check if a file was uploaded
         if (!req.file) {
@@ -583,14 +582,15 @@ app.post("/api/resume/extract", upload.single("resume"), async (req, res) => {
             });
         }
 
-        // Load the PDF using PDF.js
-        const loadingTask = getDocument({
-            data: new Uint8Array(req.file.buffer),
-            isEvalSupported: false,
-            useSystemFonts: true
-        });
 
-        pdfDocument = await loadingTask.promise;
+        //load
+        loadingTask = getDocument({
+    data: new Uint8Array(req.file.buffer),
+    isEvalSupported: false,
+    useSystemFonts: true
+});
+
+const pdfDocument = await loadingTask.promise;
 
         // Extract text from every page
         const extractedPages = [];
@@ -638,10 +638,10 @@ app.post("/api/resume/extract", upload.single("resume"), async (req, res) => {
         });
 
     } finally {
-        if (pdfDocument) {
-            await pdfDocument.destroy();
-        }
+    if (loadingTask) {
+        await loadingTask.destroy();
     }
+}
 });
 
 
