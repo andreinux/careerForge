@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import ResumePDF from "../components/ResumePDF";
- 
+import API_BASE_URL from "../api";
 
 function GenerateResume() {
   const [formData, setFormData] = useState({
@@ -50,7 +50,7 @@ const [isEditing, setIsEditing] = useState(false);
   setSubmitted(false);
 
   try {
-    const response = await fetch("http://localhost:5000/api/resume/generate", {
+    const response = await fetch(`${API_BASE_URL}/api/resume/generate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

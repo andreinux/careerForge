@@ -1,6 +1,6 @@
 
 import { useRef, useState } from "react";
-
+import API_BASE_URL from "../api";
 
 function ScoreBar({ label, score, maxScore, feedback }) {
   const percentage = (score / maxScore) * 100;
@@ -104,7 +104,7 @@ async function handleSubmit(event) {
     formData.append("targetRole", targetRole);
 
     const response = await fetch(
-      "http://localhost:5000/api/resume/evaluate",
+      `${API_BASE_URL}/api/resume/evaluate`,
       {
         method: "POST",
         body: formData,

@@ -3,11 +3,48 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import Groq from "groq-sdk";
-dotenv.config();
 import multer from "multer";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import mammoth from "mammoth";
+import { Redis } from "@upstash/redis";
+import { Ratelimit } from "@upstash/ratelimit";
+dotenv.config();
 
+
+if (!process.env.GROQ_API_KEY) {
+    throw new Error("Missing GROQ_API_KEY environment variable.");
+}
+
+if (
+    !process.env.UPSTASH_REDIS_REST_URL ||
+    !process.env.UPSTASH_REDIS_REST_TOKEN
+) {
+    throw new Error("Missing Upstash Redis environment variables.");
+}
+
+
+//---------------------------redis rate limiting configuration-----------------------
+
+// Upstash Redis connection
+const redis = Redis.fromEnv();
+
+// Rate limiter for AI resume generation
+const generateLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(3, "15 m"),
+    prefix: "careerforge:generate",
+    analytics: false
+});
+
+// Rate limiter for AI resume evaluation
+const evaluateLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(3, "15 m"),
+    prefix: "careerforge:evaluate",
+    analytics: false
+});
+
+//------------------end of redis config
 
 const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY
@@ -17,23 +54,107 @@ const MODEL = "openai/gpt-oss-20b";
 
 
 const app = express();
+
+// Trust Vercel's proxy so Express can identify visitor IPs
+app.set("trust proxy", 1);
+
+// Reusable rate-limit middleware
+const createRateLimitMiddleware = (limiter) => {
+    return async (req, res, next) => {
+        try {
+            const identifier = req.ip;
+
+            const { success } = await limiter.limit(identifier);
+
+            if (!success) {
+                return res.status(429).json({
+                    success: false,
+                    message: "Too many requests. Please try again in 15 minutes."
+                });
+            }
+
+            next();
+
+        } catch (error) {
+            console.error("Rate limiter error:", error.message);
+
+            return res.status(503).json({
+                success: false,
+                message: "Our service is temporarily unavailable. Please try again later."
+            });
+        }
+    };
+};
+
+
+// Shared daily AI usage cap (atomic Redis operation)
+const consumeDailyAiRequest = async () => {
+    const dailyLimit = Number(process.env.DAILY_AI_LIMIT ?? 30);
+
+if (!Number.isInteger(dailyLimit) || dailyLimit <= 0) {
+    throw new Error("DAILY_AI_LIMIT must be a positive integer.");
+}
+
+    const now = new Date();
+    const dateKey = now.toISOString().slice(0, 10);
+    const redisKey = `careerforge:daily-ai:${dateKey}`;
+
+    const nextMidnight = Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + 1
+    );
+
+    const ttl = Math.ceil((nextMidnight - now.getTime()) / 1000);
+
+    const script = `
+        local current = tonumber(redis.call("GET", KEYS[1]) or "0")
+        local limit = tonumber(ARGV[1])
+
+        if current >= limit then
+            return 0
+        end
+
+        local count = redis.call("INCR", KEYS[1])
+
+        if count == 1 then
+            redis.call("EXPIRE", KEYS[1], tonumber(ARGV[2]))
+        end
+
+        return 1
+    `;
+
+    const allowed = await redis.eval(
+        script,
+        [redisKey],
+        [dailyLimit, ttl]
+    );
+
+    return Number(allowed) === 1;
+};
+
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    process.env.CLIENT_ORIGIN
+].filter(Boolean);
+
 app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        "http://localhost:5174"
-    ]
+    origin: allowedOrigins
 }));
 
-app.use(express.json());
+
+
+app.use(express.json({ limit: "100kb" }));
 
 // PDF and docx upload configuration
 
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5 MB
+        fileSize: 4 * 1024 * 1024 // 4 MB
     },
     fileFilter: (req, file, cb) => {
         const allowedMimeTypes = [
@@ -133,37 +254,6 @@ app.get("/api/health", (req, res) => {
 
 
 
-
-//GROQ ROUTE
-
-app.get("/api/test-groq", async (req, res) => {
-    try {
-        const completion = await groq.chat.completions.create({
-            model: MODEL,
-            messages: [
-                {
-                    role: "user",
-                    content: "Reply with exactly: CareerForge Groq is working!"
-                }
-            ]
-        });
-
-        res.json({
-            success: true,
-            activeModel: MODEL,
-            response: completion.choices[0].message.content
-        });
-
-    } catch (error) {
-        console.error("Groq test failed:", error);
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-});
-
 // Receive resume information
 app.post("/api/resume", (req, res) => {
     const resumeData = req.body;
@@ -196,7 +286,10 @@ app.post("/api/resume", (req, res) => {
 
 
 // Generate resume using Groq
-app.post("/api/resume/generate", async (req, res) => {
+app.post(
+    "/api/resume/generate",
+    createRateLimitMiddleware(generateLimiter),
+    async (req, res) => {
     try {
         const resumeData = req.body;
 
@@ -423,6 +516,16 @@ Remember:
 - Follow the required JSON structure.
 `;
 
+
+        const allowed = await consumeDailyAiRequest();
+
+        if (!allowed) {
+            return res.status(429).json({
+                success: false,
+                message: "CareerForge has reached its daily AI usage limit. Please try again tomorrow."
+            });
+        }
+
         // Generate resume using Groq
         const completion = await groq.chat.completions.create({
             model: MODEL,
@@ -520,6 +623,8 @@ generatedResume.sectionOrder = sectionOrders[selectedFormat];
     }
 });
 
+
+
 // Extract text from uploaded resume PDF
 app.post("/api/resume/extract", upload.single("resume"), async (req, res) => {
     
@@ -609,7 +714,11 @@ const pdfDocument = await loadingTask.promise;
 
 
 // Evaluate an uploaded resume using Groq AI route
-app.post("/api/resume/evaluate", upload.single("resume"), async (req, res) => {
+app.post(
+    "/api/resume/evaluate",
+    createRateLimitMiddleware(evaluateLimiter),
+    upload.single("resume"),
+    async (req, res) => {
     let pdfDocument;
 
     try {
@@ -650,6 +759,17 @@ if (!resumeText) {
         const targetRole = (req.body.targetRole || "").trim();
 
         // 4. Ask Groq to evaluate the resume
+
+        // Check shared daily AI usage limit
+const allowed = await consumeDailyAiRequest();
+
+if (!allowed) {
+    return res.status(429).json({
+        success: false,
+        message: "CareerForge has reached its daily AI usage limit. Please try again tomorrow."
+    });
+}
+
         const completion = await groq.chat.completions.create({
             model: MODEL,
             temperature: 0.2,
@@ -806,14 +926,20 @@ ${limitedResumeText}
         });
 
     } catch (error) {
-        console.error("Resume evaluation error:", error.message);
+    console.error("Resume evaluation error:", error.message);
 
-        return res.status(500).json({
+    if (error.status === 429) {
+        return res.status(429).json({
             success: false,
-            message: "Unable to evaluate this resume. Please try again."
+            message: "Our AI service is currently busy. Please try again later."
         });
+    }
 
-    } 
+    return res.status(500).json({
+        success: false,
+        message: "Unable to evaluate this resume. Please try again."
+    });
+}
 });
 
 
@@ -828,22 +954,27 @@ app.use((error, req, res, next) => {
             success: false,
             message:
                 error.code === "LIMIT_FILE_SIZE"
-                    ? "File size must not exceed 5 MB."
+                    ? "File size must not exceed 4 MB."
                     : "File upload failed."
         });
     }
 
     if (error) {
-        return res.status(400).json({
-            success: false,
-            message: error.message || "File upload failed."
-        });
-    }
+    console.error("File upload error:", error.message);
+
+    return res.status(400).json({
+        success: false,
+        message: "Invalid or unsupported file. Please upload a valid PDF or DOCX file under 4 MB."
+    });
+}
 
     next();
 });
 
+if (process.env.NODE_ENV !== "production") {
+    app.listen(PORT, () => {
+        console.log(`CareerForge server running on port ${PORT}`);
+    });
+}
 
-app.listen(PORT, () => {
-    console.log(`CareerForge server running on port ${PORT}`);
-});
+export default app;
