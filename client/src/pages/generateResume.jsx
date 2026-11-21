@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { pdf } from "@react-pdf/renderer";
 import ResumePDF from "../components/resumePDF";
 import API_BASE_URL from "../api";
 
@@ -107,6 +107,25 @@ setSubmitted(true);
   "education",
   "certifications",
 ];
+
+    async function handleDownloadPDF() {
+  try {
+    const blob = await pdf(
+      <ResumePDF resume={editedResume} />
+    ).toBlob();
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "CareerForge-Resume.pdf";
+    link.click();
+
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch (error) {
+    console.error("PDF download failed:", error);
+  }
+}
 
 
 return (
@@ -538,17 +557,14 @@ return (
             >
               Edit Resume
             </button>
-              <PDFDownloadLink
-  key={editedResume?.sectionOrder?.join("-") || "default"}
-  document={<ResumePDF resume={editedResume} />}
-  
-              fileName="CareerForge-Resume.pdf"
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-            >
-              {({ loading }) =>
-                loading ? "Preparing PDF..." : "Download PDF ↓"
-              }
-            </PDFDownloadLink>
+             <button
+  onClick={handleDownloadPDF}
+  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-emerald-700 active:scale-95 active:bg-emerald-800"
+>
+  Download PDF ↓
+</button>
+
+
           </div>
         )}
       </div>
