@@ -134,7 +134,6 @@ if (!Number.isInteger(dailyLimit) || dailyLimit <= 0) {
 };
 
 const PORT = process.env.PORT || 5000;
-
 const allowedOrigins = [
     "http://localhost:5173",
     "http://localhost:5174",
@@ -142,10 +141,19 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-    origin: allowedOrigins
+    origin: (origin, callback) => {
+        const isAllowed =
+            !origin ||
+            allowedOrigins.includes(origin) ||
+            /^https:\/\/career-forge-client-[a-z0-9-]+-andreinux\.vercel\.app$/.test(origin);
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    }
 }));
-
-
 
 app.use(express.json({ limit: "100kb" }));
 
