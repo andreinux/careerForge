@@ -484,7 +484,7 @@ return (
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 w-full rounded-xl bg-white px-6 py-4 font-bold text-indigo-950 transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            className="mt-6 w-full rounded-xl bg-white px-6 py-4 font-bold text-indigo-950 transition-all duration-150 hover:bg-indigo-100 active:scale-[0.98] active:bg-indigo-200 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 sm:w-auto"
           >
             {loading ? "Generating Resume..." : "Generate My Resume →"}
           </button>
@@ -559,7 +559,7 @@ return (
             </button>
              <button
   onClick={handleDownloadPDF}
-  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-emerald-700 active:scale-95 active:bg-emerald-800"
+  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-emerald-700 active:scale-[0.98] active:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
 >
   Download PDF ↓
 </button>

@@ -296,7 +296,7 @@ async function handleSubmit(event) {
           <button
   type="submit"
   disabled={!selectedFile || isAnalyzing}
-  className="mt-8 w-full rounded-lg bg-indigo-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-indigo-900 disabled:cursor-not-allowed disabled:opacity-40"
+  className="mt-8 w-full rounded-lg bg-indigo-950 px-6 py-3.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-indigo-900 active:scale-[0.98] active:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
 >
   {isAnalyzing ? "Analyzing Your Resume..." : "Analyze My Resume"}
 </button>
