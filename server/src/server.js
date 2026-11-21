@@ -2,7 +2,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { GoogleGenAI, Type } from "@google/genai";
 import Groq from "groq-sdk";
 dotenv.config();
 import multer from "multer";
@@ -123,22 +122,7 @@ async function extractResumeText(file) {
 
     throw new Error("Unsupported resume file format.");
 }
-
-
-
-// Initialize Gemini
-if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY is missing from server/.env");
-}
-
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY
-});
-
-
-
-
-console.log("ACTIVE GEMINI MODEL:", MODEL);
+console.log("ACTIVE GROQ MODEL:", MODEL);
 // Health check
 app.get("/api/health", (req, res) => {
     res.json({
@@ -146,30 +130,9 @@ app.get("/api/health", (req, res) => {
         message: "CareerForge backend is running!"
     });
 });
-app.get("/api/test-gemini", async (req, res) => {
-    try {
-        console.log("TEST ROUTE MODEL:", MODEL);
 
-        const result = await ai.interactions.create({
-            model: MODEL,
-            input: "Reply with exactly: CareerForge is working!"
-        });
 
-        res.json({
-            success: true,
-            activeModel: MODEL,
-            response: result.output_text
-        });
 
-    } catch (error) {
-        console.error("Simple Gemini test failed:", error);
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-});
 
 //GROQ ROUTE
 

@@ -429,9 +429,7 @@ return (
         </h3>
 
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">
-            Recommended
-          </span>
+        
           {selectedFormat === "hybrid" && (
             <span className="text-sm font-semibold text-indigo-600">
               ✓ Selected
