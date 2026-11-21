@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import ResumePDF from "../components/ResumePDF";
+import ResumePDF from "../components/resumePDF";
 import API_BASE_URL from "../api";
 
 function GenerateResume() {
