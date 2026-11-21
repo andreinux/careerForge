@@ -1,8 +1,8 @@
 
 import { BrowserRouter, Routes, Route } from "react-router";
 import Home from "./pages/Home";
-import GenerateResume from "./pages/GenerateResume";
-import EvaluateResume from "./pages/EvaluateResume";
+import GenerateResume from "./pages/generateResume";
+import EvaluateResume from "./pages/evaluateResume";
 
 function App() {
   return (
